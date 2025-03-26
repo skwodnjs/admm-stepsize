@@ -50,6 +50,7 @@ for idx, rho in enumerate(rho_list):
 
     primal_residuals = np.zeros(T)
     dual_residuals = np.zeros(T)
+    l2_combined = np.zeros(T)
 
     for it in range(T):
         # ADMM
@@ -63,13 +64,14 @@ for idx, rho in enumerate(rho_list):
 
         primal_residuals[it] = np.linalg.norm(r)
         dual_residuals[it] = np.linalg.norm(s)
+        l2_combined[it] = np.hypot(np.linalg.norm(r), np.linalg.norm(s))
 
         x_old = x_new
         z_old = z_new
         u_old = u_new
 
         # 저장
-        residuals_dict[labels[idx]] = (primal_residuals, dual_residuals)
+        residuals_dict[labels[idx]] = (primal_residuals, dual_residuals, l2_combined)
 
 # 고유한 rho 값 추출
 rho_values = [label.split('=')[1].strip() for label in labels]
@@ -84,10 +86,11 @@ plt.figure(figsize=(10, 5))
 for label in labels:
     rho = label.split('=')[1].strip()
     color = rho_to_color[rho]
-    primal_residuals, dual_residuals = residuals_dict[label]
+    primal_residuals, dual_residuals, l2_combined = residuals_dict[label]
 
-    plt.plot(np.log10(primal_residuals + 1e-15), color=color, label=f'{label} (Primal)')
-    plt.plot(np.log10(dual_residuals + 1e-15), color=color, linestyle='--', label=f'{label} (Dual)')
+    # plt.plot(np.log10(primal_residuals + 1e-15), color=color, label=f'{label} (Primal)')
+    # plt.plot(np.log10(dual_residuals + 1e-15), color=color, linestyle='--', label=f'{label} (Dual)')
+    plt.plot(np.log10(l2_combined + 1e-10), color=color, linestyle='-.', label=f'{label} (L2 Combined)')
 
 plt.xlabel('Iteration')
 plt.ylabel('Log Residual')

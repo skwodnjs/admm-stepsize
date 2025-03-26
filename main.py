@@ -88,9 +88,10 @@ for label in labels:
     color = rho_to_color[rho]
     primal_residuals, dual_residuals, l2_combined = residuals_dict[label]
 
-    # plt.plot(np.log10(primal_residuals + 1e-15), color=color, label=f'{label} (Primal)')
-    # plt.plot(np.log10(dual_residuals + 1e-15), color=color, linestyle='--', label=f'{label} (Dual)')
-    plt.plot(np.log10(l2_combined + 1e-10), color=color, linestyle='-.', label=f'{label} (L2 Combined)')
+    # plt.plot(np.log10(primal_residuals + 1e-10), color=color, label=f'{label} (Primal)')
+    # plt.plot(np.log10(dual_residuals + 1e-10), color=color, linestyle='--', label=f'{label} (Dual)')
+    # plt.plot(np.log10(l2_combined + 1e-10), color=color, linestyle='-.', label=f'{label} (L2 Combined)')
+    plt.plot(np.log10(np.minimum(primal_residuals, dual_residuals) + 1e-10), color=color, linestyle='--', label=f'{label} (Minimum)')
 
 plt.xlabel('Iteration')
 plt.ylabel('Log Residual')

@@ -1,5 +1,7 @@
-import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+import numpy as np
 
 np.random.seed(42)
 
@@ -34,14 +36,14 @@ u_init = np.random.randn(m + 2 * p, 1)
 
 T = 500
 
-# rho 설정
-rho_list = [0.5, 1.0, 1.5]
-labels = ['rho = 0.5', 'rho = 1.0', 'rho = 1.5']
+# rho
+rho_list = [0.5, 1.0, 1.5, 2.0]
+labels = ['rho = 0.5', 'rho = 1.0', 'rho = 1.5', 'rho = 2.0']
 
 residuals_dict = {}
 
 for idx, rho in enumerate(rho_list):
-    # 초기화
+    # init
     x_old = np.copy(x_init)
     z_old = np.copy(z_init)
     u_old = np.copy(u_init)
@@ -50,10 +52,10 @@ for idx, rho in enumerate(rho_list):
     dual_residuals = np.zeros(T)
 
     for it in range(T):
-        # ADMM 업데이트
+        # ADMM
         x_new = -np.linalg.inv(Q + rho * A.T.dot(A)).dot(q + rho * A.T.dot(z_old + u_old - c))
         z_new = np.maximum(np.zeros((m + 2 * p, 1)), -A.dot(x_new) - u_old + c)
-        u_new = u_old + rho * (A.dot(x_new) - c + z_new)
+        u_new = u_old + (A.dot(x_new) - c + z_new)
 
         # residual 계산
         r = A.dot(x_new) + z_new - c                               # primal residual
@@ -62,7 +64,6 @@ for idx, rho in enumerate(rho_list):
         primal_residuals[it] = np.linalg.norm(r)
         dual_residuals[it] = np.linalg.norm(s)
 
-        # 업데이트
         x_old = x_new
         z_old = z_new
         u_old = u_new
@@ -70,12 +71,23 @@ for idx, rho in enumerate(rho_list):
         # 저장
         residuals_dict[labels[idx]] = (primal_residuals, dual_residuals)
 
+# 고유한 rho 값 추출
+rho_values = [label.split('=')[1].strip() for label in labels]
+unique_rhos = sorted(set(rho_values))
+
+# rho → color 매핑 (컬러맵 사용)
+cmap = mpl.colormaps.get_cmap('tab10').resampled(len(unique_rhos))
+rho_to_color = {rho: cmap(i) for i, rho in enumerate(unique_rhos)}
+
 # 시각화
 plt.figure(figsize=(10, 5))
 for label in labels:
+    rho = label.split('=')[1].strip()
+    color = rho_to_color[rho]
     primal_residuals, dual_residuals = residuals_dict[label]
-    plt.plot(np.log10(primal_residuals + 1e-15), label=f'{label} (Primal)')
-    plt.plot(np.log10(dual_residuals + 1e-15), linestyle='--', label=f'{label} (Dual)')
+
+    plt.plot(np.log10(primal_residuals + 1e-15), color=color, label=f'{label} (Primal)')
+    plt.plot(np.log10(dual_residuals + 1e-15), color=color, linestyle='--', label=f'{label} (Dual)')
 
 plt.xlabel('Iteration')
 plt.ylabel('Log Residual')

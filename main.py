@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-np.random.seed(42)
+# np.random.seed(42)
+np.random.seed(256)
 
 # We want to solve
 # (1/2) x^T Q x + q^T x
@@ -12,7 +13,6 @@ np.random.seed(42)
 
 n = 10
 m = 4
-p = 2
 
 Perturb = 0.2 * np.random.randn(n, n)
 Q = 15 * np.eye(n) + Perturb + Perturb.T
@@ -21,18 +21,12 @@ q = np.random.randn(n, 1)
 A = np.random.randn(m, n)
 c = np.random.randn(m, 1)
 
-B = np.random.randn(p, n)
-b = np.random.randn(p, 1)
-
-A = np.concatenate((A, B, -B), axis=0)  # A_new
-c = np.concatenate((c, b, -b), axis=0)  # c_new
-
 # f(x) = (1/2) x^T Q x + q^T x
 # g(z) = \delta_{R^+} (z)
 
 x_init = np.random.randn(n, 1)
-z_init = np.random.randn(m + 2 * p, 1)
-u_init = np.random.randn(m + 2 * p, 1)
+z_init = np.random.randn(m, 1)
+u_init = np.random.randn(m, 1)
 
 T = 500
 
@@ -55,7 +49,7 @@ for idx, rho in enumerate(rho_list):
     for it in range(T):
         # ADMM
         x_new = -np.linalg.inv(Q + rho * A.T.dot(A)).dot(q + rho * A.T.dot(z_old + u_old - c))
-        z_new = np.maximum(np.zeros((m + 2 * p, 1)), -A.dot(x_new) - u_old + c)
+        z_new = np.maximum(np.zeros((m, 1)), -A.dot(x_new) - u_old + c)
         u_new = u_old + (A.dot(x_new) - c + z_new)
 
         # residual 계산
@@ -64,6 +58,7 @@ for idx, rho in enumerate(rho_list):
 
         primal_residuals[it] = np.linalg.norm(r)
         dual_residuals[it] = np.linalg.norm(s)
+        # print(np.linalg.norm(r), np.linalg.norm(s))
         l2_combined[it] = np.hypot(np.linalg.norm(r), np.linalg.norm(s))
 
         x_old = x_new

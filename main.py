@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # np.random.seed(42)
-np.random.seed(256)
 
 # We want to solve
 # (1/2) x^T Q x + q^T x
@@ -58,7 +57,6 @@ for idx, rho in enumerate(rho_list):
 
         primal_residuals[it] = np.linalg.norm(r)
         dual_residuals[it] = np.linalg.norm(s)
-        # print(np.linalg.norm(r), np.linalg.norm(s))
         l2_combined[it] = np.hypot(np.linalg.norm(r), np.linalg.norm(s))
 
         x_old = x_new
@@ -86,7 +84,7 @@ for label in labels:
     # plt.plot(np.log10(primal_residuals + 1e-10), color=color, label=f'{label} (Primal)')
     # plt.plot(np.log10(dual_residuals + 1e-10), color=color, linestyle='--', label=f'{label} (Dual)')
     # plt.plot(np.log10(l2_combined + 1e-10), color=color, linestyle='-.', label=f'{label} (L2 Combined)')
-    plt.plot(np.log10(np.minimum(primal_residuals, dual_residuals) + 1e-10), color=color, linestyle='--', label=f'{label} (Minimum)')
+    plt.plot(np.log10(np.maximum(primal_residuals, dual_residuals) + 1e-10), color=color, linestyle='--', label=f'{label} (Maximum)')
 
 plt.xlabel('Iteration')
 plt.ylabel('Log Residual')

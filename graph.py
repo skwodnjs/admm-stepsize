@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-np.random.seed(420)
+# np.random.seed(42)
 
 # We want to solve
 # (1/2) x^T Q x + q^T x
@@ -11,7 +11,6 @@ np.random.seed(420)
 
 n = 10
 m = 4
-# p = 2
 
 Perturb = 0.2 * np.random.randn(n, n)
 Q = 15 * np.eye(n) + Perturb + Perturb.T
@@ -30,12 +29,11 @@ u_init = np.random.randn(m, 1)
 
 T = 500
 
-# 0.5부터 3.5까지 0.25 간격으로 rho 설정
-rho_list = np.arange(0.1, 8.0, 0.1)
+rho_list = np.arange(0.1, 8.0, 0.05)
 
 residuals_dict = {}
 
-ep = 0.1e-15
+ep = 0.1e-10
 
 for rho in rho_list:
     # init
@@ -57,9 +55,11 @@ for rho in rho_list:
         r = A.dot(x_new) + z_new - c                               # primal residual
         s = rho * A.T.dot(z_new - z_old)                           # dual residual
 
-        if np.linalg.norm(r) < ep or np.linalg.norm(s) < ep:
+        if np.linalg.norm(r) < ep and np.linalg.norm(s) < ep:
             residuals_dict[rho] = it
             break
+        elif it == T-1:
+            residuals_dict[rho] = T
 
         x_old = x_new
         z_old = z_new

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-# np.random.seed(42)
+np.random.seed(42)
 
 # We want to solve
 # (1/2) x^T Q x + q^T x

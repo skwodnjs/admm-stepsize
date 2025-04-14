@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 x = np.linspace(-5, 5, 400)
 
 center = -0.5 + 0j
-angles = np.linspace(0, 2 * np.pi, 20, endpoint=False)
+angles = np.linspace(0, 2 * np.pi, 10, endpoint=False)
 v_list = np.concatenate([
     center + 0.4 * np.exp(1j * angles),
-    center + 0.3 * np.exp(1j * angles)
+    center + 0.3 * np.exp(1j * angles),
+    center + 0.2 * np.exp(1j * angles),
 ])
 
 # 그래프

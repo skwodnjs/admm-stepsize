@@ -1,5 +1,3 @@
-import numpy as np
-
 def generate_random_param_of_LQP(m=100, n=150):
 
     # µ in R: regularization parameter (positive scalar)

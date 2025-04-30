@@ -29,7 +29,7 @@ def generate_random_LQP(param):
 
     return objective
 
-def over_relexed_admm_LQP(param, theta=0.5, alpha=1.8, tol=1e-8, max_iter=1000, verbose=True):
+def over_relexed_admm_LQP(param, theta=1, alpha=1.8, tol=1e-8, max_iter=1000):
     mu, A, f, L = param["mu"], param["A"], param["f"], param["L"]
 
     f_u = generate_random_LQP(param)
@@ -50,11 +50,10 @@ def over_relexed_admm_LQP(param, theta=0.5, alpha=1.8, tol=1e-8, max_iter=1000, 
     w = np.random.randn(n)
     b = np.random.randn(n)
 
-    if verbose:
-        print("Initial values:")
-        print("u =", u)
-        print("w =", w)
-        print("b =", b)
+    # print("Initial values:")
+    # print("u =", u)
+    # print("w =", w)
+    # print("b =", b)
 
     # ADMM
     prev_w = np.copy(w)
@@ -71,17 +70,15 @@ def over_relexed_admm_LQP(param, theta=0.5, alpha=1.8, tol=1e-8, max_iter=1000, 
 
         r_norm = np.linalg.norm(r_primal)
         s_norm = np.linalg.norm(r_dual)
-        if verbose:
-            print(f"[{k + 1:03d}] f(u, w) = {f_u(u, w):.9f}, ||w - u|| = {np.linalg.norm(w - u):.9f}")
+        # print(f"[{k + 1:03d}] f(u, w) = {f_u(u, w):.9f}, ||w - u|| = {np.linalg.norm(w - u):.9f}")
 
         if r_norm < tol and s_norm < tol:
-            if verbose:
-                print(f"✅ Converged at iteration {k + 1}")
+            # print(f"✅ Converged at iteration {k + 1}")
             return k + 1
 
     return max_iter
 
-def optimal_theta(param, max_iter=1000, lr=1, tol=1e-4):
+def optimal_theta(param, max_iter=10000, lr=5e-1, tol=5e-3):
     mu, A, f, L = param["mu"], param["A"], param["f"], param["L"]
     n = A.shape[1]
     I = np.eye(n)
@@ -94,7 +91,7 @@ def optimal_theta(param, max_iter=1000, lr=1, tol=1e-4):
         return term1 @ (term2 - I)
 
     def spectral_radius(Q_mat):
-        eigvals = np.linalg.eigvals(Q_mat)
+        eigvals = np.linalg.eigvals(I + Q_mat)
         return np.max(np.abs(eigvals))
 
     # Gradient descent for minimizing the smallest eigenvalue of Q(θ)
@@ -120,8 +117,20 @@ def optimal_theta(param, max_iter=1000, lr=1, tol=1e-4):
 
         theta = theta_new
 
-    print(f"[✔] Converged in {k+1} iterations")
+    print(f"[✔] Converged in {k+1} iterations for optimize theta")
     return theta
 
 if __name__ == "__main__":
-    over_relexed_admm_LQP()
+    # seed = 42
+    seed = np.random.randint(0, 100000)
+    np.random.seed(seed)
+    print(f"seed: {seed}")
+    param = generate_random_param_of_LQP(m=3, n=5)
+
+    iter_count = over_relexed_admm_LQP(param)
+    theta_opt = optimal_theta(param)
+    iter_count_opt = over_relexed_admm_LQP(param, theta=theta_opt)
+
+    print(f"ADMM 반복 횟수(θ = 1): {iter_count}")
+    print(f"최적의 θ: {theta_opt:.6f}")
+    print(f"ADMM 반복 횟수(θ = optimal): {iter_count_opt}")

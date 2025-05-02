@@ -94,8 +94,8 @@ def optimal_rho(param):
     return rho_star
 
 if __name__ == "__main__":
-    # seed = 42
-    seed = np.random.randint(0, 100000)
+    seed = 42001
+    # seed = np.random.randint(0, 100000)
     np.random.seed(seed)
     print(f"seed: {seed}")
     param = generate_random_param_of_QP(m=3, n=5)

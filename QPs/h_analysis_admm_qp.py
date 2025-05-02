@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 from g_admm_qp import *
 
-rhos = np.arange(0, 1000, 1) + 0.1
+rhos = np.arange(0, 100, 1) + 0.1
 iterations = []
 
 # seed = 35600

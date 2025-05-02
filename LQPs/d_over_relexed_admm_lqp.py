@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 def generate_random_param_of_LQP(m=100, n=150):
@@ -30,6 +32,8 @@ def generate_random_LQP(param):
     return objective
 
 def over_relexed_admm_LQP(param, theta=1, alpha=1.8, tol=1e-8, max_iter=1000):
+    start = time.time()
+
     mu, A, f, L = param["mu"], param["A"], param["f"], param["L"]
 
     f_u = generate_random_LQP(param)
@@ -74,11 +78,13 @@ def over_relexed_admm_LQP(param, theta=1, alpha=1.8, tol=1e-8, max_iter=1000):
 
         if r_norm < tol and s_norm < tol:
             # print(f"✅ Converged at iteration {k + 1}")
-            return k + 1
+            return (u, w), f_u(u, w), k + 1, time.time() - start
 
-    return max_iter
+    return None, None, None, time.time() - start
 
 def optimal_theta(param, max_iter=10000, lr=5e-1, tol=5e-3):
+    start = time.time()
+
     mu, A, f, L = param["mu"], param["A"], param["f"], param["L"]
     n = A.shape[1]
     I = np.eye(n)
@@ -117,8 +123,8 @@ def optimal_theta(param, max_iter=10000, lr=5e-1, tol=5e-3):
 
         theta = theta_new
 
-    print(f"[✔] Converged in {k+1} iterations for optimize theta")
-    return theta
+    # print(f"[✔] Converged in {k+1} iterations for optimize theta")
+    return theta, time.time() - start
 
 if __name__ == "__main__":
     # seed = 42
@@ -127,10 +133,11 @@ if __name__ == "__main__":
     print(f"seed: {seed}")
     param = generate_random_param_of_LQP(m=3, n=5)
 
-    iter_count = over_relexed_admm_LQP(param)
-    theta_opt = optimal_theta(param)
-    iter_count_opt = over_relexed_admm_LQP(param, theta=theta_opt)
+    _, obj1, iter_count, admm_time = over_relexed_admm_LQP(param)
+    theta_opt, opt_theta_time = optimal_theta(param)
+    _, obj2, iter_count_opt, admm_time_opt = over_relexed_admm_LQP(param, theta=theta_opt)
 
-    print(f"ADMM 반복 횟수(θ = 1): {iter_count}")
-    print(f"최적의 θ: {theta_opt:.6f}")
-    print(f"ADMM 반복 횟수(θ = optimal): {iter_count_opt}")
+    print("\n📌 ADMM 결과 요약:")
+    print(f"θ = 1            \t→ iter: {iter_count:3d}, value: {obj1:.9f}, time: {admm_time:.6f} sec")
+    print(f"compute optimal θ\t→ θ_opt: {theta_opt:.6f}, time: {opt_theta_time:.6f} sec")
+    print(f"θ = θ_opt        \t→ iter: {iter_count_opt:3d}, value: {obj2:.9f}, time: {admm_time_opt:.6f} sec")

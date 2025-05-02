@@ -19,11 +19,9 @@ theta_max = 30
 
 # 목적 함수
 def objective(theta):
-    iter_count = admm_LQP(param=param, theta=theta, max_iter=max_iter)
-    if iter_count < max_iter:
-        return -np.log(iter_count + 1e-9)
-    else:
-        return None
+    _, _, iter_count, _ = admm_LQP(param=param, theta=theta, max_iter=max_iter)
+    if iter_count is not None:
+        return -iter_count
 
 # GP 예측 함수
 def surrogate(model, X):
@@ -104,10 +102,26 @@ for i in range(50):
 
 ix = np.argmax(y)
 theta_bayesian = X[ix][0]
-theta_opt = optimal_theta(param=param)
-print(f"Best theta by Bayesian Optimization: \ttheta={theta_bayesian:.4f}, iteration={admm_LQP(param=param, theta=theta_bayesian)}")
-print(f"Best theta by GD: \t\t\t\t\t\ttheta={theta_opt:.4f}, iteration={admm_LQP(param=param, theta=theta_opt)}")
+theta_opt, _ = optimal_theta(param=param)
+
+# ADMM 실행 (Bayesian 결과)
+(u_bayes, _), obj_bayes, iter_bayes, time_bayes = admm_LQP(param=param, theta=theta_bayesian)
+
+# ADMM 실행 (Gradient Descent 결과)
+(u_gd, _), obj_gd, iter_gd, time_gd = admm_LQP(param=param, theta=theta_opt)
+
+print("\n📌 ADMM θ 탐색 결과 요약")
+print(f"▶ Bayesian Optimization θ \t: {theta_bayesian:.6f}")
+print(f"  ↪ 반복 횟수              \t: {iter_bayes}")
+print(f"  ↪ u                     \t: {u_bayes}")
+print(f"  ↪ objective value       \t: {obj_bayes:.9f}")
+print(f"  ↪ 수행 시간              \t: {time_bayes:.6f} sec")
 print()
+print(f"▶ Gradient Descent θ*     \t: {theta_opt:.6f}")
+print(f"  ↪ 반복 횟수              \t: {iter_gd}")
+print(f"  ↪ u                     \t: {u_gd}")
+print(f"  ↪ objective value       \t: {obj_gd:.9f}")
+print(f"  ↪ 수행 시간              \t: {time_gd:.6f} sec")
 
 # 최종 결과 시각화
 plot(X, y, model)
